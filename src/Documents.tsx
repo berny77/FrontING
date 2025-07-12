@@ -12,12 +12,12 @@ const Documents: React.FC = () => {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [infoGeneralVisible, setInfoGeneralVisible] = useState<boolean>(false);
   const [busqueda, setBusqueda] = useState<string>("");
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [contenidoModal, setContenidoModal] = useState<string>("");
 
   const handleFileButtonClick = () => {
     fileInputRef.current?.click();
   };
-
-  
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -63,7 +63,8 @@ const Documents: React.FC = () => {
       const response = await fetch(`http://localhost:5000/documento/${encodeURIComponent(nombre)}`);
       const data = await response.json();
       if (response.ok) {
-        alert(`📄 Información de "${nombre}":\n\n${data.contenido}`);
+        setContenidoModal(data.contenido);
+        setModalVisible(true);
       } else {
         alert(`❌ Error: ${data.error}`);
       }
@@ -83,7 +84,7 @@ const Documents: React.FC = () => {
       const data = await response.json();
       if (response.ok) {
         alert(`✅ ${data.mensaje}`);
-        fetchDocumentos(); // Actualizar lista
+        fetchDocumentos(); //act  lista
       } else {
         alert(`❌ Error: ${data.error}`);
       }
@@ -96,22 +97,20 @@ const Documents: React.FC = () => {
     setInfoGeneralVisible(!infoGeneralVisible);
   };
 
-    const handleBusquedaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBusquedaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setBusqueda(event.target.value);
   };
 
-  // Filtrar documentos según el término de búsqueda
   const documentosFiltrados = documentos.filter((doc) =>
     doc.nombre.toLowerCase().includes(busqueda.toLowerCase())
-  )
+  );
 
   useEffect(() => {
     fetchDocumentos();
   }, []);
 
-   return (
+  return (
     <div className="full-screen-container">
-      {/* Barra de búsqueda ubicada en la esquina superior derecha */}
       <div className="search-bar-container">
         <input
           type="text"
@@ -169,6 +168,15 @@ const Documents: React.FC = () => {
           </div>
         )}
       </div>
+
+      {modalVisible && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="close-button" onClick={() => setModalVisible(false)}>Cerrar</button>
+            <pre className="modal-text">{contenidoModal}</pre>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
